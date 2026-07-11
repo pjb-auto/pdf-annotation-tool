@@ -6,9 +6,9 @@
 # the Linux app (AppImage + .deb) entirely on your machine. Everything runs
 # offline once dependencies are fetched.
 #
-# Quick start (replace OWNER/REPO with the real GitHub path):
+# Quick start:
 #
-#   curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/scripts/install-linux.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/pjb-auto/pdf-annotation-tool/main/scripts/install-linux.sh | bash
 #
 # Options (environment variables):
 #   PDFTOOL_REPO    Git URL to clone            (default: the URL baked in below)
@@ -23,7 +23,7 @@
 set -euo pipefail
 
 # ---- Configuration -----------------------------------------------------------
-REPO_URL="${PDFTOOL_REPO:-https://github.com/OWNER/REPO.git}"
+REPO_URL="${PDFTOOL_REPO:-https://github.com/pjb-auto/pdf-annotation-tool.git}"
 BRANCH="${PDFTOOL_BRANCH:-main}"
 TARGET_DIR="${PDFTOOL_DIR:-$HOME/pdf-annotation-tool}"
 MODE="${PDFTOOL_MODE:-build}"
@@ -115,10 +115,6 @@ EOF
 
 # ---- Clone or update the repository -----------------------------------------
 fetch_source() {
-  if [ "$REPO_URL" = "https://github.com/OWNER/REPO.git" ]; then
-    die "REPO_URL is still the placeholder. Set PDFTOOL_REPO=https://github.com/<owner>/<repo>.git and re-run."
-  fi
-
   if [ -d "$TARGET_DIR/.git" ]; then
     info "Updating existing checkout in $TARGET_DIR"
     git -C "$TARGET_DIR" fetch --depth 1 origin "$BRANCH"
