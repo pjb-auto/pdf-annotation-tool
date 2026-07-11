@@ -54,10 +54,10 @@ Output is written to `dist/`. All dependencies are bundled — no internet acces
 
 ## Linux: install & compile from source (curl)
 
-The recommended way for Linux users is to compile from the GitHub source with a single command. The script clones the repo, installs dependencies, and builds the AppImage + `.deb` locally. Replace `OWNER/REPO` with the actual GitHub path:
+The recommended way for Linux users is to compile from the GitHub source with a single command. The script clones the repo, installs dependencies, and builds the AppImage + `.deb` locally:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/scripts/install-linux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/pjb-auto/pdf-annotation-tool/main/scripts/install-linux.sh | bash
 ```
 
 What it does:
@@ -71,11 +71,11 @@ Useful overrides (environment variables):
 
 ```bash
 # Just run from source instead of building an installer:
-curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/scripts/install-linux.sh | PDFTOOL_MODE=run bash
+curl -fsSL https://raw.githubusercontent.com/pjb-auto/pdf-annotation-tool/main/scripts/install-linux.sh | PDFTOOL_MODE=run bash
 
 # Build a specific branch/tag, into a custom directory:
 PDFTOOL_BRANCH=v1.0.0 PDFTOOL_DIR=~/apps/pdftool \
-  bash <(curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/scripts/install-linux.sh)
+  bash <(curl -fsSL https://raw.githubusercontent.com/pjb-auto/pdf-annotation-tool/main/scripts/install-linux.sh)
 ```
 
 > Security tip: it's good practice to read any `curl | bash` script first — open `scripts/install-linux.sh` in the repo to review it before running.
@@ -83,7 +83,7 @@ PDFTOOL_BRANCH=v1.0.0 PDFTOOL_DIR=~/apps/pdftool \
 ### Manual build from source
 
 ```bash
-git clone https://github.com/OWNER/REPO.git
+git clone https://github.com/pjb-auto/pdf-annotation-tool.git
 cd REPO
 npm install
 npm run build:linux   # artifacts in dist/  (or: npm start to run without building)
@@ -105,13 +105,13 @@ Tagged releases are built by CI (`.github/workflows/release.yml`) and attached a
 ```bash
 # Portable AppImage
 curl -L -o PDF-Annotation-Tool.AppImage \
-  https://github.com/OWNER/REPO/releases/latest/download/PDF-Annotation-Tool-1.0.0.AppImage
+  https://github.com/pjb-auto/pdf-annotation-tool/releases/latest/download/PDF-Annotation-Tool-1.0.0.AppImage
 chmod +x PDF-Annotation-Tool.AppImage
 ./PDF-Annotation-Tool.AppImage
 
 # Or the .deb for system-wide install
 curl -L -o pdf-annotation-tool.deb \
-  https://github.com/OWNER/REPO/releases/latest/download/pdf-annotation-tool_1.0.0_amd64.deb
+  https://github.com/pjb-auto/pdf-annotation-tool/releases/latest/download/pdf-annotation-tool_1.0.0_amd64.deb
 sudo apt install ./pdf-annotation-tool.deb
 ```
 
