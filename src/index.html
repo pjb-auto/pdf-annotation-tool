@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: data:;">
+  <title>PDF Annotation Tool</title>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    window.addEventListener('error', (e) => {
+      console.log('[window error] ' + (e.message || (e.error && e.error.stack)) + ' @ ' + e.filename + ':' + e.lineno);
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      console.log('[unhandledrejection] ' + ((e.reason && e.reason.stack) || e.reason));
+    });
+  </script>
+</head>
+<body>
+  <header id="toolbar">
+    <div class="toolbar-group brand">
+      <img src="assets/icon.png" alt="PDF Annotation Tool" class="brand-logo">
+      <span class="brand-name">PDF Tool</span>
+    </div>
+    <div class="toolbar-group">
+      <button id="btn-open" title="Open PDF (Ctrl+O)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Open
+      </button>
+      <button id="btn-generate" title="Generate a PDF from a text, HTML or Word file (Ctrl+G)">Generate PDF</button>
+      <button id="btn-save" title="Save (Ctrl+S)" disabled>Save</button>
+      <button id="btn-save-as" title="Save As (Ctrl+Shift+S)" disabled>Save As</button>
+    </div>
+    <input type="file" id="generate-input" class="hidden" accept=".txt,.text,.md,.markdown,.csv,.tsv,.log,.json,.htm,.html,.docx,text/*">
+
+    <div class="toolbar-group">
+      <button id="btn-prev" title="Previous page" disabled>‹</button>
+      <span id="page-info">— / —</span>
+      <button id="btn-next" title="Next page" disabled>›</button>
+      <input type="number" id="page-input" min="1" value="1" disabled>
+    </div>
+
+    <div class="toolbar-group">
+      <button id="btn-zoom-out" title="Zoom out" disabled>−</button>
+      <span id="zoom-info">100%</span>
+      <button id="btn-zoom-in" title="Zoom in" disabled>+</button>
+      <button id="btn-zoom-fit" title="Fit to width" disabled>Fit</button>
+    </div>
+
+    <div class="toolbar-group">
+      <input type="search" id="search-input" placeholder="Search…" disabled>
+      <button id="btn-search-prev" title="Previous match" disabled>↑</button>
+      <button id="btn-search-next" title="Next match" disabled>↓</button>
+      <span id="search-info"></span>
+    </div>
+
+    <div class="toolbar-group tools">
+      <button id="tool-select" class="tool-btn active" data-tool="select" title="Select text">Select</button>
+      <button id="tool-highlight" class="tool-btn" data-tool="highlight" title="Highlight text">Highlight</button>
+      <button id="tool-underline" class="tool-btn" data-tool="underline" title="Underline text">Underline</button>
+      <button id="tool-ink" class="tool-btn" data-tool="ink" title="Draw ink">Ink</button>
+      <button id="tool-signature" class="tool-btn" data-tool="signature" title="Add signature">Sign</button>
+      <input type="color" id="highlight-color" value="#ffff00" title="Annotation color">
+    </div>
+  </header>
+
+  <div id="tab-bar" class="hidden"></div>
+
+  <main id="main-area">
+    <aside id="sidebar" class="hidden">
+      <h3>Annotations</h3>
+      <ul id="annotation-list"></ul>
+    </aside>
+
+    <div id="viewer-container">
+      <div id="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <p>Open a PDF file to get started</p>
+        <button id="btn-open-empty">Open PDF</button>
+        <p style="font-size: 13px; opacity: 0.7;">or drag &amp; drop a PDF anywhere</p>
+      </div>
+      <div id="viewer" class="hidden"></div>
+    </div>
+  </main>
+
+  <!-- Signature modal -->
+  <dialog id="signature-dialog">
+    <form method="dialog">
+      <h2>Add Visual Signature</h2>
+      <p class="disclaimer">This is a visual mark only — not a legally binding digital signature.</p>
+      <div class="sig-tabs">
+        <button type="button" id="sig-tab-saved" class="sig-tab active">Saved</button>
+        <button type="button" id="sig-tab-draw" class="sig-tab">Draw</button>
+        <button type="button" id="sig-tab-upload" class="sig-tab">Upload Image</button>
+      </div>
+      <div id="sig-saved-panel">
+        <p class="sig-hint">Click a saved signature to place it on the page.</p>
+        <div id="sig-saved-list"></div>
+        <p id="sig-saved-empty" class="sig-hint">No saved signatures yet. Use the Draw or Upload tab to create one.</p>
+      </div>
+      <div id="sig-draw-panel" class="hidden">
+        <canvas id="signature-canvas" width="460" height="180"></canvas>
+        <button type="button" id="sig-clear">Clear</button>
+      </div>
+      <div id="sig-upload-panel" class="hidden">
+        <input type="file" id="sig-file-input" accept="image/png,image/jpeg,image/webp">
+        <img id="sig-preview" alt="Signature preview" class="hidden">
+      </div>
+      <label id="sig-save-row"><input type="checkbox" id="sig-save-checkbox" checked> Save this signature for reuse</label>
+      <div class="dialog-actions">
+        <button type="button" id="sig-cancel" value="cancel">Cancel</button>
+        <button type="button" id="sig-confirm" value="confirm">Place Signature</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="renderer.js"></script>
+</body>
+</html>
